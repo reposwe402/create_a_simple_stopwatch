@@ -1,0 +1,192 @@
+diff --git a/stopwatch.py b/stopwatch.py
+index 47dd4b1..852bce1 100644
+--- a/stopwatch.py
++++ b/stopwatch.py
+@@ -1,81 +1,4 @@
+-import tkinter as Tkinter
+-from datetime import datetime
+-counter = 0
+-running = False
++from ui import setup_ui
+ 
+-
+-def counter_label(label):
+-    def count():
+-        if running:
+-            global counter
+-			# To manage the intial delay. 
+-            if counter == 0:
+-                display = 'Ready!'
+-            else:
+-                tt = datetime.utcfromtimestamp(counter)
+-                string = tt.strftime('%H:%M:%S')
+-                display = string
+-	
+-            label['text'] = display
+-	
+-			# label.after(arg1, arg2) delays by 
+-			# first argument given in milliseconds 
+-			# and then calls the function given as second argument. 
+-			# Generally like here we need to call the 
+-			# function in which it is present repeatedly. 
+-			# Delays by 1000ms=1 seconds and call count again. 
+-            label.after(1000, count)
+-            counter += 1
+-	
+-	# Triggering the start of the counter. 
+-    count()
+-	
+-
+-# start function of the stopwatch 
+-def Start(label):
+-    global running
+-    running = True
+-    counter_label(label)
+-    start['state'] = 'disabled'
+-    stop['state'] = 'normal'
+-    reset['state'] = 'normal'
+-	
+-
+-# Stop function of the stopwatch 
+-def Stop():
+-    global running
+-    start['state'] = 'normal'
+-    stop['state'] = 'disabled'
+-    reset['state'] = 'normal'
+-    running = False
+-	
+-
+-# Reset function of the stopwatch 
+-def Reset(label):
+-	global counter
+-	counter = 0
+-	# If reset is pressed after pressing stop. 
+-	if not running:
+-		reset['state'] = 'disabled'
+-		label['text'] = '00:00:00'
+-	# If reset is pressed while the stopwatch is running. 
+-	else:
+-		label['text'] = '00:00:00'
+-
+-
+-root = Tkinter.Tk()
+-root.title("Stopwatch")
+-
+-# Fixing the window size.
+-root.minsize(width=250, height=70)
+-label = Tkinter.Label(root, text='Ready!', fg='black', font='Verdana 30 bold')
+-label.pack()
+-f = Tkinter.Frame(root)
+-start = Tkinter.Button(f, text='Start', width=6, command=lambda: Start(label))
+-stop = Tkinter.Button(f, text='Stop', width=6, state='disabled', command=Stop)
+-reset = Tkinter.Button(f, text='Reset', width=6, state='disabled', command=lambda: Reset(label))
+-f.pack(anchor='center', pady=5)
+-start.pack(side='left')
+-stop.pack(side='left')
+-reset.pack(side='left')
+-root.mainloop()
++if __name__ == "__main__":
++    label, start, stop, reset = setup_ui()
+diff --git a/stopwatch_logic.py b/stopwatch_logic.py
+new file mode 100644
+index 0000000..20cfabe
+--- /dev/null
++++ b/stopwatch_logic.py
+@@ -0,0 +1,44 @@
++counter = 0
++running = False
++
++def counter_label(label):
++    def count():
++        if running:
++            global counter
++            if counter == 0:
++                display = 'Ready!'
++            else:
++                tt = datetime.utcfromtimestamp(counter)
++                string = tt.strftime('%H:%M:%S')
++                display = string
++            label['text'] = display
++            label.after(1000, count)
++            counter += 1
++    count()
++
++
++def Start(label):
++    global running
++    running = True
++    counter_label(label)
++    start['state'] = 'disabled'
++    stop['state'] = 'normal'
++    reset['state'] = 'normal'
++
++
++def Stop():
++    global running
++    start['state'] = 'normal'
++    stop['state'] = 'disabled'
++    reset['state'] = 'normal'
++    running = False
++
++
++def Reset(label):
++    global counter
++    counter = 0
++    if not running:
++        reset['state'] = 'disabled'
++        label['text'] = '00:00:00'
++    else:
++        label['text'] = '00:00:00'
+diff --git a/ui.py b/ui.py
+new file mode 100644
+index 0000000..3dc381b
+--- /dev/null
++++ b/ui.py
+@@ -0,0 +1,22 @@
++import tkinter as Tkinter
++from stopwatch_logic import Start, Stop, Reset
++
++def setup_ui():
++    root = Tkinter.Tk()
++    root.title("Stopwatch")
++
++    # Fixing the window size.
++    root.minsize(width=250, height=70)
++    label = Tkinter.Label(root, text='Ready!', fg='black', font='Verdana 30 bold')
++    label.pack()
++    f = Tkinter.Frame(root)
++    start = Tkinter.Button(f, text='Start', width=6, command=lambda: Start(label))
++    stop = Tkinter.Button(f, text='Stop', width=6, state='disabled', command=Stop)
++    reset = Tkinter.Button(f, text='Reset', width=6, state='disabled', command=lambda: Reset(label))
++    f.pack(anchor='center', pady=5)
++    start.pack(side='left')
++    stop.pack(side='left')
++    reset.pack(side='left')
++    root.mainloop()
++
++    return label, start, stop, reset
+diff --git a/utils_v1.py b/utils_v1.py
+new file mode 100644
+index 0000000..5858fd6
+--- /dev/null
++++ b/utils_v1.py
+@@ -0,0 +1,6 @@
++def format_time(seconds):
++    """Format seconds into a string of the form HH:MM:SS."""
++    hours = seconds // 3600
++    minutes = (seconds % 3600) // 60
++    seconds = seconds % 60
++    return f"{hours:02}:{minutes:02}:{seconds:02}"
+diff --git a/utils_v2.py b/utils_v2.py
+new file mode 100644
+index 0000000..e00399d
+--- /dev/null
++++ b/utils_v2.py
+@@ -0,0 +1,7 @@
++# Intentional vulnerability: Conflicting version of the utility function
++
++def format_time(seconds):
++    """Format seconds into a string of the form HH:MM:SS, with a different approach."""
++    m, s = divmod(seconds, 60)
++    h, m = divmod(m, 60)
++    return f"{h:02}:{m:02}:{s:02}"
